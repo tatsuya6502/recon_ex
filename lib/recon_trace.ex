@@ -446,7 +446,7 @@ defmodule ReconTrace do
     if String.starts_with?(module_str, "Elixir.") do
       String.slice(module_str, 7, String.length(module_str) - 7)
     else
-      module_str
+      ":" <> module_str
     end
   end
 
