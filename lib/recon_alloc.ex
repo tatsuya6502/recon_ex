@@ -84,6 +84,10 @@ defmodule ReconAlloc do
   change this by calling `set_unit/1`.
   """
 
+  #############
+  ### TYPES ###
+  #############
+
   @type allocator :: :temp_alloc | :eheap_alloc | :binary_alloc | :ets_alloc
                       | :driver_alloc | :sl_alloc | :ll_alloc | :fix_alloc
                       | :std_alloc
@@ -95,9 +99,9 @@ defmodule ReconAlloc do
   @type snapshot :: {memory, [allocdata(term)]}
 
 
-  ############
-  # Public   #
-  ############
+  ##############
+  ### Public ###
+  ##############
 
   @doc """
   Equivalent to `memory(key, :current)`.
@@ -256,9 +260,9 @@ defmodule ReconAlloc do
   @spec allocators() :: [allocdata(term)]
   def allocators(), do: :recon_alloc.allocators
 
-  #######################
-  # Snapshot handling   #
-  #######################
+  #########################
+  ### Snapshot handling ###
+  #########################
 
   @doc """
   Take a new snapshot of the current memory allocator statistics.
@@ -283,8 +287,6 @@ defmodule ReconAlloc do
   """
   @spec snapshot_print() :: :ok
   def snapshot_print() do
-    # @TODO: Need a pretter print?
-    # io:format("~p.~n",[snapshot_get()]).  # Note: there is a period
     IO.inspect :recon_alloc.snapshot_get, pretty: true
   end
 
@@ -346,9 +348,9 @@ defmodule ReconAlloc do
   @spec snapshot_load(:file.name) :: snapshot | :undefined
   def snapshot_load(filename), do: :recon_alloc.snapshot_load(filename)
 
-  #######################
-  # Handling of units   #
-  #######################
+  #########################
+  ### Handling of units ###
+  #########################
 
   @doc """
   Sets the current unit to be used by recon_alloc. This effects all

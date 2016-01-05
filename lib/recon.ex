@@ -74,9 +74,10 @@ defmodule Recon do
        making it easier to identify bad nodes.
   """
 
-  ###########
-  # TYPES   #
-  ###########
+  #############
+  ### TYPES ###
+  #############
+
   @type proc_attrs :: {pid,
                        attr :: term,
                        [name :: atom
@@ -127,11 +128,11 @@ defmodule Recon do
   @type nodes :: node | [node, ...]
   @type rpc_result :: {[success :: term], [fail :: term]}
 
-  ################
-  # PUBLIC API   #
-  ################
+  ##################
+  ### PUBLIC API ###
+  ##################
 
-  # Process Info   #
+  ### Process Info ###
 
   @doc """
   Equivalent to `info(<a.b.c>)` where `a`, `b`, and `c` are integers
@@ -199,11 +200,10 @@ defmodule Recon do
   @doc """
   Fetches a given attribute from all processes (except the caller) and
   returns the biggest `num` consumers.
-
-  @todo (Erlang Recon) Implement this function so it only stores `num`
-  entries in memory at any given time, instead of as many as there
-  are processes.
   """
+  # @todo (Erlang Recon) Implement this function so it only stores
+  # `num` entries in memory at any given time, instead of as many as
+  # there are processes.
   @spec proc_count(attribute_name :: atom, non_neg_integer) :: [proc_attrs]
   def proc_count(attr_name, num) do
     :recon.proc_count(attr_name, num)
@@ -334,7 +334,7 @@ defmodule Recon do
     :recon.node_stats(n, interval, fold_fun, init)
   end
 
-  # OTP & Manipulations   #
+  ### OTP & Manipulations ###
 
   @doc """
   Shorthand call to `get_state(pid_term, 5000)`
@@ -350,7 +350,7 @@ defmodule Recon do
   @spec get_state(pid_term, timeout_ms) :: term
   def get_state(pid_term, timeout), do: :recon.get_state(pid_term, timeout)
 
-  # Code & Stuff   #
+  ### Code & Stuff ###
 
   @doc """
   Equivalent `remote_load(nodes(), mod)`.
@@ -372,10 +372,8 @@ defmodule Recon do
   to an intermediary form used in the AST. They will still be placed
   in the right module attributes, however.
   """
-  # TODO: (Erlang Recon) Figure out a way to pretty-print typespecs
+  # @todo (Erlang Recon) Figure out a way to pretty-print typespecs
   # and records.
-  # TODO: (Elixir ReconEX) Figure out a way to convert Erlang codes
-  # into Elixir codes.
   @spec source(module) :: iolist
   def source(module), do: :recon.source(module)
 
@@ -496,7 +494,7 @@ defmodule Recon do
     :recon.port_info(port_term, type_or_keys)
   end
 
-  # RPC Utils   #
+  ### RPC Utils ###
 
   @doc """
   Shorthand for `rpc([node()|nodes()], fun)`

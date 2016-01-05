@@ -1,7 +1,7 @@
 defmodule ReconLib do
   require :recon_lib
 
-  @moduledoc"""
+  @moduledoc """
   Regroups useful functionality used by recon when dealing with data
   from the node. The functions in this module allow quick runtime
   access to fancier behaviour than what would be done using recon
