@@ -7,7 +7,7 @@ defmodule ReconEx.Mixfile do
     [app: :recon_ex,
      version: @version,
      elixir: "~> 1.1",
-     description: description,
+     description: "Elixir wrapper for Recon, diagnostic tools for production use",
      package: [
        maintaners: ["Tatsuya Kawano"],
        licenses: ["BSD 3-clause"],
@@ -19,8 +19,7 @@ defmodule ReconEx.Mixfile do
   end
 
   def application do
-    []
-    # [applications: [:logger]]
+    [applications: [:logger, :recon]]
   end
 
   defp deps do [
@@ -32,24 +31,6 @@ defmodule ReconEx.Mixfile do
     {:earmark, "~> 0.1", only: :dev}
     # {:markdown, github: "devinus/markdown", only: :test}
   ]
-  end
-
-  defp description do
-    """
-    Elixir wrapper for Recon, tools to diagnose Erlang VM safely
-    in production
-
-    - Recon
-      * gathers information about processes and the general state of
-        the VM, ports, and OTP behaviours running in the node.
-    - ReconAlloc
-      * provides functions to deal with Erlang's memory allocators.
-    - ReconLib
-      * provides useful functionality used by Recon when dealing
-        with data from the node.
-    - ReconTrace
-      * production-safe tracing facilities.
-    """
   end
 
 end
