@@ -61,4 +61,11 @@ iex -S mix
 
 ## Special Thanks
 
-- Fred Hebert, the author of [Recon](https://ferd.github.io/recon/)
+- Special thanks to Fred Hebert, the author of [Recon](https://ferd.github.io/recon/),
+  and the all contributors to it.
+
+
+## License
+
+This code, as the original Recon, is published under the BSD 3-clause
+License. See LICENSE file for more information.
