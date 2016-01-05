@@ -48,7 +48,7 @@ defmodule ReconTrace do
 
   First let's trace the `:queue.new` functions in any process:
 
-      iex> ReconTrace.calls({:queue, :new, :_}, 1)
+      > ReconTrace.calls({:queue, :new, :_}, 1)
       1
       13:14:34.086078 <0.44.0> :queue.new
       Recon tracer rate limit tripped.
@@ -59,7 +59,7 @@ defmodule ReconTrace do
   Let's instead look for all the `:queue.in/2` calls, to see what it
   is we're inserting in queues:
 
-      iex> ReconTrace.calls({:queue, :in, 2}, 1)
+      > ReconTrace.calls({:queue, :in, 2}, 1)
       1
       13:14:55.365157 <0.44.0> :queue.in(a, {[], []})
       Recon tracer rate limit tripped.
@@ -69,7 +69,7 @@ defmodule ReconTrace do
   (`_`) and returns `:return`. This last part will generate a second
   trace for each call that includes the return value:
 
-      iex> ReconTrace.calls({:queue, :in, fn(_) -> :return end}, 3)
+      > ReconTrace.calls({:queue, :in, fn(_) -> :return end}, 3)
       1
 
       13:15:27.655132 <0.44.0> :queue.in(:a, {[], []})
@@ -81,7 +81,7 @@ defmodule ReconTrace do
 
   Matching on argument lists can be done in a more complex manner:
 
-      iex> ReconTrace.calls(
+      > ReconTrace.calls(
       ...>   {:queue, :_,
       ...>    fn([a, _]) when is_list(a); is_integer(a) andalso a > 1 -> :return end}
       ...>   {10, 100}
@@ -96,7 +96,7 @@ defmodule ReconTrace do
 
       13:25:14.695194 <0.53.0> :queue.split/2 --> {{[4, 3, 2], [1]}, {[10, 9, 8, 7],[5, 6]}}
 
-      iex> ReconTrace.clear
+      > ReconTrace.clear
       :ok
 
   Note that in the pattern above, no specific function (`_`) was
@@ -151,18 +151,22 @@ defmodule ReconTrace do
   function. For instance to write the traces to a file you can do
   something like
 
-      iex> {:ok, dev} = File.open("/tmp/trace", [:write])
-      iex> ReconTrace.calls({:queue, :in, fn(_) -> :return end}, 3,
-      ...>                    [{:io_server, dev}])
+      > {:ok, dev} = File.open("/tmp/trace", [:write])
+      > ReconTrace.calls({:queue, :in, fn(_) -> :return end}, 3,
+      >                  [{:io_server, dev}])
       1
-      iex>
+      >
       Recon tracer rate limit tripped.
-      iex> File.close(dev).
+      > File.close(dev).
 
   The only output still sent to the Group Leader is the rate limit
   being tripped, and any errors. The rest will be sent to the other IO
   server (see http://erlang.org/doc/apps/stdlib/io_protocol.html).
   """
+
+  #############
+  ### TYPES ###
+  #############
 
   @type matchspec    :: [{[term], [term], [term]}]
   @type shellfun     :: ((term) -> term)
@@ -189,6 +193,10 @@ defmodule ReconTrace do
   @type max          :: max_traces | max_rate
   @type num_matches  :: non_neg_integer
 
+  ##############
+  ### Public ###
+  ##############
+
   @doc """
   Stops all tracing at once.
   """
@@ -201,24 +209,12 @@ defmodule ReconTrace do
   Equivalent to `calls/3`.
   """
   @spec calls(tspec | [tspec, ...], max) :: num_matches
-  def calls({mod, fun, args}, max) when is_function(args) do
-    :recon_trace.calls({mod, fun, fun_to_match_spec(args)}, max,
-                       [formatter: &format/1])
-  end
-
   def calls({_mod, _fun, _args}=tspec, max) do
-    :recon_trace.calls(tspec, max, [formatter: &format/1])
+    :recon_trace.calls(to_erl_tspec(tspec), max, [formatter: &format/1])
   end
-
   def calls(tspecs, max) when is_list(tspecs) do
-    Enum.map(tspecs,
-             fn
-               ({mod, fun, args}) when is_function(args) ->
-                 {mod, fun, fun_to_match_spec(args)}
-               ({_mod, _fun, _args}=tspec) ->
-                 tspec
-             end
-    ) |> :recon_trace.calls(max, [formatter: &format/1])
+    Enum.map(tspecs, &to_erl_tspec/1) |>
+      :recon_trace.calls(max, [formatter: &format/1])
   end
 
   @doc """
@@ -312,24 +308,24 @@ defmodule ReconTrace do
   precautions taken by this library.
   """
   @spec calls(tspec | [tspec, ...], max, options) :: num_matches
-  def calls({mod, fun, args}, max, opts) when is_function(args) do
-    :recon_trace.calls({mod, fun, fun_to_match_spec(args)}, max,
-                       add_formatter(opts))
-  end
-
   def calls({_mod, _fun, _args}=tspec, max, opts) do
-    :recon_trace.calls(tspec, max, add_formatter(opts))
+    :recon_trace.calls(to_erl_tspec(tspec), max, add_formatter(opts))
+  end
+  def calls(tspecs, max, opts) when is_list(tspecs) do
+    Enum.map(tspecs, &to_erl_tspec/1) |>
+      :recon_trace.calls(max, add_formatter(opts))
   end
 
-  def calls(tspecs, max, opts) when is_list(tspecs) do
-    Enum.map(tspecs,
-             fn
-               ({mod, fun, args}) when is_function(args) ->
-                 {mod, fun, fun_to_match_spec(args)}
-               ({_mod, _fun, _args}=tspec) ->
-                 tspec
-             end
-    ) |> :recon_trace.calls(max, add_formatter(opts))
+  @doc """
+  Returns tspec with its `shellfun` replaced with `matchspec`.
+  This futction is used by `calls/2` and `calls/3`.
+  """
+  @spec to_erl_tspec(tspec) :: tspec
+  def to_erl_tspec({mod, fun, shellfun}) when is_function(shellfun) do
+    {mod, fun, fun_to_match_spec(shellfun)}
+  end
+  def to_erl_tspec({_mod, _fun, _arity_or_matchspec}=tspec) do
+    tspec
   end
 
   @doc """
@@ -344,6 +340,10 @@ defmodule ReconTrace do
     body = format_body(type, trace_info) |> String.replace("~", "~~")
     '#{header} #{body}\n'
   end
+
+  ###############
+  ### Private ###
+  ###############
 
   defp add_formatter(opts) do
     case :proplists.get_value(:formatter, opts) do
@@ -436,34 +436,31 @@ defmodule ReconTrace do
     seconds = rem(secs, 60) + (micro / 1_000_000)
     {h, m, seconds}
   end
-
   defp to_hms(_) do
     {0, 0, 0}
   end
 
   defp format_module(module_atom) do
-    module_str = to_string(module_atom)
-    if String.starts_with?(module_str, "Elixir.") do
-      String.slice(module_str, 7, String.length(module_str) - 7)
-    else
-      ":" <> module_str
-    end
+    to_string(module_atom) |> format_module1
+  end
+
+  defp format_module1(<<"Elixir.", module_str :: binary>>) do
+    module_str
+  end
+  defp format_module1(module_str) do
+    ":" <> module_str
   end
 
   defp format_args(arity) when is_integer(arity) do
     "/#{arity}"
   end
-
   defp format_args(args) when is_list(args) do
     arg_str = Enum.map(args, &(inspect &1, pretty: true)) |> Enum.join(", ")
     "(" <> arg_str <> ")"
   end
 
   defp calc_total_heap_size(info) do
-    heap_size     = :proplists.get_value(:heap_size, info)
-    old_heap_size = :proplists.get_value(:old_heap_size, info)
-    mbuf_size     = :proplists.get_value(:mbuf_size, info)
-    heap_size + old_heap_size + mbuf_size
+    info[:heap_size] + info[:old_heap_size] + info[:mbuf_size]
   end
 
   defp fun_to_match_spec(shell_fun) do
