@@ -9,7 +9,7 @@ defmodule ReconEx.Mixfile do
      elixir: "~> 1.1",
      description: "Elixir wrapper for Recon, diagnostic tools for production use",
      package: [
-       maintaners: ["Tatsuya Kawano"],
+       maintainers: ["Tatsuya Kawano"],
        licenses: ["BSD 3-clause"],
        links: %{"GitHub" => "https://github.com/tatsuya6502/recon_ex"}
        ],
