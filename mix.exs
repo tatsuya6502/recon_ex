@@ -23,10 +23,7 @@ defmodule ReconEx.Mixfile do
   end
 
   defp deps do [
-    # ReconTrace reqires recon 2.3.0 or newer, which is not released yet.
-    # Get it from GitHub.
-    # {:recon, "~> 2.3.0"},
-    {:recon, github: "ferd/recon"},
+    {:recon, "~> 2.3.1", manager: :rebar},
     {:ex_doc, "~> 0.10.0", only: :dev},
     {:earmark, "~> 0.1", only: :dev}
     # {:markdown, github: "devinus/markdown", only: :test}
