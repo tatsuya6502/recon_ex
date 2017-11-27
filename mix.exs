@@ -15,7 +15,7 @@ defmodule ReconEx.Mixfile do
        ],
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps]
+     deps: deps()]
   end
 
   def application do
@@ -23,9 +23,9 @@ defmodule ReconEx.Mixfile do
   end
 
   defp deps do [
-    {:recon, "~> 2.3.1", manager: :rebar},
-    {:ex_doc, "~> 0.10.0", only: :dev},
-    {:earmark, "~> 0.1", only: :dev}
+    {:recon, "~> 2.3"},
+    {:ex_doc, "~> 0.18.1", only: :dev},
+    {:earmark, "~> 1.2.3", only: :dev}
     # {:markdown, github: "devinus/markdown", only: :test}
   ]
   end
