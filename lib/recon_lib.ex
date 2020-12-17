@@ -8,14 +8,13 @@ defmodule ReconLib do
   module itself.
   """
 
-  @type diff :: [Recon.proc_attrs | Recon.inet_attrs]
+  @type diff :: [Recon.proc_attrs() | Recon.inet_attrs()]
   @type milliseconds :: non_neg_integer
   @type interval_ms :: non_neg_integer
 
   @type scheduler_id :: pos_integer
-  @type sched_time :: {scheduler_id,
-                       active_time :: non_neg_integer,
-                       total_time  :: non_neg_integer}
+  @type sched_time ::
+          {scheduler_id, active_time :: non_neg_integer, total_time :: non_neg_integer}
 
   @doc """
   Compare two samples and return a list based on some key. The type
@@ -31,8 +30,8 @@ defmodule ReconLib do
   Runs a fun once, waits `ms`, runs the fun again, and returns both
   results.
   """
-  @spec sample(milliseconds, (() -> term))
-                :: {first :: term, second :: term}
+  @spec sample(milliseconds, (() -> term)) ::
+          {first :: term, second :: term}
   def sample(delay, fun), do: :recon_lib.sample(delay, fun)
 
   @doc """
@@ -62,7 +61,7 @@ defmodule ReconLib do
   Returns the attributes (`Recon.proc_attrs/0`) of all processes of
   the node, except the caller.
   """
-  @spec proc_attrs(term) :: [Recon.proc_attrs]
+  @spec proc_attrs(term) :: [Recon.proc_attrs()]
   def proc_attrs(attr_name) do
     :recon_lib.proc_attrs(attr_name)
   end
@@ -74,7 +73,7 @@ defmodule ReconLib do
   A special attribute is `binary_memory`, which will reduce the memory
   used by the process for binary data on the global heap.
   """
-  @spec proc_attrs(term, pid) :: {:ok, Recon.proc_attrs} | {:error, term}
+  @spec proc_attrs(term, pid) :: {:ok, Recon.proc_attrs()} | {:error, term}
   def proc_attrs(attr_name, pid) do
     :recon_lib.proc_attrs(attr_name, pid)
   end
@@ -83,7 +82,7 @@ defmodule ReconLib do
   Returns the attributes (Recon.inet_attrs/0) of all inet ports (UDP,
   SCTP, TCP) of the node.
   """
-  @spec inet_attrs(term) :: [Recon.inet_attrs]
+  @spec inet_attrs(term) :: [Recon.inet_attrs()]
   def inet_attrs(attr_name), do: :recon_lib.inet_attrs(attr_name)
 
   @doc """
@@ -91,8 +90,8 @@ defmodule ReconLib do
   TCP). This form of attributes is standard for most comparison
   functions for processes in recon.
   """
-  @spec inet_attrs(Recon.inet_attri_name, port)
-          :: {:ok, Recon.inet_attrs} | {:error, term}
+  @spec inet_attrs(Recon.inet_attri_name(), port) ::
+          {:ok, Recon.inet_attrs()} | {:error, term}
   def inet_attrs(attr, port), do: :recon_lib.inet_attrs(attr, port)
 
   @doc """
@@ -104,20 +103,23 @@ defmodule ReconLib do
   @doc """
   Transforms a given term to a pid.
   """
-  @spec term_to_pid(Recon.pid_term) :: pid
+  @spec term_to_pid(Recon.pid_term()) :: pid
   def term_to_pid(term) do
-    pre_process_pid_term(term) |> :recon_lib.term_to_pid
+    pre_process_pid_term(term) |> :recon_lib.term_to_pid()
   end
 
-  defp pre_process_pid_term({_a, _b, _c}=pid_term) do
+  defp pre_process_pid_term({_a, _b, _c} = pid_term) do
     pid_term
   end
-  defp pre_process_pid_term(<<"#PID", pid_term :: binary>>) do
+
+  defp pre_process_pid_term(<<"#PID", pid_term::binary>>) do
     to_char_list(pid_term)
   end
+
   defp pre_process_pid_term(pid_term) when is_binary(pid_term) do
     to_char_list(pid_term)
   end
+
   defp pre_process_pid_term(pid_term) do
     pid_term
   end
@@ -125,10 +127,11 @@ defmodule ReconLib do
   @doc """
   Transforms a given term to a port.
   """
-  @spec term_to_port(Recon.port_term) :: port
+  @spec term_to_port(Recon.port_term()) :: port
   def term_to_port(term) when is_binary(term) do
-    to_char_list(term) |> :recon_lib.term_to_port
+    to_char_list(term) |> :recon_lib.term_to_port()
   end
+
   def term_to_port(term) do
     :recon_lib.term_to_port(term)
   end
@@ -137,11 +140,13 @@ defmodule ReconLib do
   Calls a given function every `interval` milliseconds and supports
   a map-like interface (each result is modified and returned)
   """
-  @spec time_map(n :: non_neg_integer,
-                 interval_ms,
-                 fun :: ((state :: term) -> {term, state :: term}),
-                 initial_state :: term,
-                 mapfun :: ((term) -> term)) :: [term]
+  @spec time_map(
+          n :: non_neg_integer,
+          interval_ms,
+          fun :: (state :: term -> {term, state :: term}),
+          initial_state :: term,
+          mapfun :: (term -> term)
+        ) :: [term]
   def time_map(n, interval, fun, state, map_fun) do
     :recon_lib.time_map(n, interval, fun, state, map_fun)
   end
@@ -150,24 +155,25 @@ defmodule ReconLib do
   Calls a given function every `interval` milliseconds and supports
   a fold-like interface (each result is modified and accumulated)
   """
-  @spec time_fold(n :: non_neg_integer,
-                  interval_ms,
-                  fun :: ((state :: term) -> {term, state :: term}),
-                  initial_state :: term,
-                  foldfun :: ((term, acc0 :: term) -> acc1 :: term),
-                  initial_acc :: term) :: [term]
+  @spec time_fold(
+          n :: non_neg_integer,
+          interval_ms,
+          fun :: (state :: term -> {term, state :: term}),
+          initial_state :: term,
+          foldfun :: (term, acc0 :: term -> acc1 :: term),
+          initial_acc :: term
+        ) :: [term]
   def time_fold(n, interval, fun, state, fold_fun, init) do
-     :recon_lib.time_fold(n, interval, fun, state, fold_fun, init)
+    :recon_lib.time_fold(n, interval, fun, state, fold_fun, init)
   end
 
   @doc """
   Diffs two runs of :erlang.statistics(scheduler_wall_time) and
   returns usage metrics in terms of cores and 0..1 percentages.
   """
-  @spec scheduler_usage_diff(sched_time, sched_time)
-          :: [{scheduler_id, usage :: number}]
+  @spec scheduler_usage_diff(sched_time, sched_time) ::
+          [{scheduler_id, usage :: number}]
   def scheduler_usage_diff(first, last) do
     :recon_lib.scheduler_usage_diff(first, last)
   end
-
 end

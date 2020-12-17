@@ -88,16 +88,22 @@ defmodule ReconAlloc do
   ### TYPES ###
   #############
 
-  @type allocator :: :temp_alloc | :eheap_alloc | :binary_alloc | :ets_alloc
-                      | :driver_alloc | :sl_alloc | :ll_alloc | :fix_alloc
-                      | :std_alloc
+  @type allocator ::
+          :temp_alloc
+          | :eheap_alloc
+          | :binary_alloc
+          | :ets_alloc
+          | :driver_alloc
+          | :sl_alloc
+          | :ll_alloc
+          | :fix_alloc
+          | :std_alloc
   @type instance :: non_neg_integer
   @type allocdata(t) :: {{allocator, instance}, t}
 
   # Snapshot handling
   @type memory :: [{atom, atom}]
   @type snapshot :: {memory, [allocdata(term)]}
-
 
   ##############
   ### Public ###
@@ -108,8 +114,8 @@ defmodule ReconAlloc do
   """
   @spec memory(:used | :allocated | :unused) :: pos_integer
   @spec memory(:usage) :: number
-  @spec memory(:allocated_types | :allocated_instances)
-                 :: [{allocator, pos_integer}]
+  @spec memory(:allocated_types | :allocated_instances) ::
+          [{allocator, pos_integer}]
   def memory(key), do: :recon_alloc.memory(key)
 
   @doc """
@@ -148,8 +154,8 @@ defmodule ReconAlloc do
   """
   @spec memory(:used | :allocated | :unused, :current | :max) :: pos_integer
   @spec memory(:usage, :current | :max) :: number
-  @spec memory(:allocated_types | :allocated_instances, :current | :max)
-                 :: [{allocator, pos_integer}]
+  @spec memory(:allocated_types | :allocated_instances, :current | :max) ::
+          [{allocator, pos_integer}]
   def memory(type, keyword), do: :recon_alloc.memory(type, keyword)
 
   @doc """
@@ -197,9 +203,8 @@ defmodule ReconAlloc do
   combining the lower cache hit joined to the largest memory values
   allocated.
   """
-  @spec cache_hit_rates() :: [{{:instance, instance},
-                               [{:hit_rate | :hits | :calls, term}]}]
-  def cache_hit_rates(), do: :recon_alloc.cache_hit_rates
+  @spec cache_hit_rates() :: [{{:instance, instance}, [{:hit_rate | :hits | :calls, term}]}]
+  def cache_hit_rates(), do: :recon_alloc.cache_hit_rates()
 
   @doc """
   Checks all allocators in `allocator/0` and returns the average block
@@ -218,8 +223,8 @@ defmodule ReconAlloc do
   Do note that values for `lmbcs` and `smbcs` are going to be rounded
   up to the next power of two when configuring them.
   """
-  @spec average_block_sizes(:current | :max)
-                             :: [{allocator, [{:mbcs, :sbcs, number}]}]
+  @spec average_block_sizes(:current | :max) ::
+          [{allocator, [{:mbcs, :sbcs, number}]}]
   def average_block_sizes(keyword) do
     :recon_alloc.average_block_sizes(keyword)
   end
@@ -258,7 +263,7 @@ defmodule ReconAlloc do
   Returns a dump of all allocator settings and values.
   """
   @spec allocators() :: [allocdata(term)]
-  def allocators(), do: :recon_alloc.allocators
+  def allocators(), do: :recon_alloc.allocators()
 
   #########################
   ### Snapshot handling ###
@@ -272,14 +277,14 @@ defmodule ReconAlloc do
   `snapshot_clear/1`.
   """
   @spec snapshot() :: snapshot | :undefined
-  def snapshot(), do: :recon_alloc.snapshot
+  def snapshot(), do: :recon_alloc.snapshot()
 
   @doc """
   Clear the current snapshot in the process dictionary, if present,
   and return the value it had before being unset.
   """
   @spec snapshot_clear() :: snapshot | :undefined
-  def snapshot_clear(), do: :recon_alloc.snapshot_clear
+  def snapshot_clear(), do: :recon_alloc.snapshot_clear()
 
   @doc """
   Prints a dump of the current snapshot stored by `snapshot/0`. Prints
@@ -287,7 +292,7 @@ defmodule ReconAlloc do
   """
   @spec snapshot_print() :: :ok
   def snapshot_print() do
-    IO.inspect :recon_alloc.snapshot_get, pretty: true
+    IO.inspect(:recon_alloc.snapshot_get(), pretty: true)
   end
 
   @doc """
@@ -295,14 +300,14 @@ defmodule ReconAlloc do
   `undefined` if no snapshot has been taken.
   """
   @spec snapshot_get() :: snapshot | :undefined
-  def snapshot_get(), do: :recon_alloc.snapshot_get
+  def snapshot_get(), do: :recon_alloc.snapshot_get()
 
   @doc """
   Save the current snapshot taken by `snapshot/0` to a file.If there
   is no current snapshot, a snaphot of the current allocator
   statistics will be written to the file.
   """
-  @spec snapshot_save(:file.name) :: :ok
+  @spec snapshot_save(:file.name()) :: :ok
   def snapshot_save(filename), do: :recon_alloc.snapshot_save(filename)
 
   @doc """
@@ -345,7 +350,7 @@ defmodule ReconAlloc do
   18411064
   ```
   """
-  @spec snapshot_load(:file.name) :: snapshot | :undefined
+  @spec snapshot_load(:file.name()) :: snapshot | :undefined
   def snapshot_load(filename), do: :recon_alloc.snapshot_load(filename)
 
   #########################
@@ -369,5 +374,4 @@ defmodule ReconAlloc do
   """
   @spec set_unit(:byte | :kilobyte | :megabyte | :gigabyte) :: :ok
   def set_unit(unit), do: :recon_alloc.set_unit(unit)
-
 end

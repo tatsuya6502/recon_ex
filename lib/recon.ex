@@ -78,34 +78,41 @@ defmodule Recon do
   ### TYPES ###
   #############
 
-  @type proc_attrs :: {pid,
-                       attr :: term,
-                       [name :: atom
-                        | {:current_function, mfa}
-                        | {:initial_call, mfa}, ...]}
+  @type proc_attrs ::
+          {pid, attr :: term,
+           [
+             name ::
+               atom
+               | {:current_function, mfa}
+               | {:initial_call, mfa},
+             ...
+           ]}
 
   @type inet_attr_name :: :recv_cnt | :recv_oct | :send_cnt | :send_oct | :cnt | :oct
 
   @type inet_attrs :: {port, attr :: term, [{atom, term}]}
 
-  @type pid_term :: pid | atom | charlist
-                    | {:global, term} | {:via, module, term}
-                    | {non_neg_integer, non_neg_integer, non_neg_integer}
+  @type pid_term ::
+          pid
+          | atom
+          | charlist
+          | {:global, term}
+          | {:via, module, term}
+          | {non_neg_integer, non_neg_integer, non_neg_integer}
 
   @type info_type :: :meta | :signals | :location | :memory_used | :work
 
   @type info_meta_key :: :registered_name | :dictionary | :group_leader | :status
   @type info_signals_key :: :links | :monitors | :monitored_by | :trap_exit
   @type info_location_key :: :initial_call | :current_stacktrace
-  @type info_memory_key :: :memory | :message_queue_len | :heap_size
-                           | :total_heap_size | :garbage_collection
+  @type info_memory_key ::
+          :memory | :message_queue_len | :heap_size | :total_heap_size | :garbage_collection
   @type info_work_key :: :reductions
 
-  @type info_key :: info_meta_key | info_signals_key | info_location_key
-                    | info_memory_key | info_work_key
+  @type info_key ::
+          info_meta_key | info_signals_key | info_location_key | info_memory_key | info_work_key
 
-  @type stats :: {[absolutes  :: {atom, term}],
-                  [increments :: {atom, term}]}
+  @type stats :: {[absolutes :: {atom, term}], [increments :: {atom, term}]}
 
   @type interval_ms :: pos_integer
   @type time_ms :: pos_integer
@@ -121,9 +128,12 @@ defmodule Recon do
   @type port_info_memory_key :: :memory | :queue_size
   @type port_info_specific_key :: atom
 
-  @type port_info_key :: port_info_meta_key | port_info_signals_key
-                         | port_info_io_key | port_info_memory_key
-                         | port_info_specific_key
+  @type port_info_key ::
+          port_info_meta_key
+          | port_info_signals_key
+          | port_info_io_key
+          | port_info_memory_key
+          | port_info_specific_key
 
   @type nodes :: node | [node, ...]
   @type rpc_result :: {[success :: term], [fail :: term]}
@@ -138,16 +148,16 @@ defmodule Recon do
   Equivalent to `info(<a.b.c>)` where `a`, `b`, and `c` are integers
   part of a pid.
   """
-  @spec info(non_neg_integer, non_neg_integer, non_neg_integer)
-            :: [{info_type, [{info_key, term}]}, ...]
+  @spec info(non_neg_integer, non_neg_integer, non_neg_integer) ::
+          [{info_type, [{info_key, term}]}, ...]
   def info(a, b, c), do: :recon.info(a, b, c)
 
   @doc """
   Equivalent to `info(<a.b.c>, key)` where `a`, `b`, and `c` are
   integers part of a pid.
   """
-  @spec info(non_neg_integer, non_neg_integer, non_neg_integer,
-             key :: info_type | [atom] | atom) :: term
+  @spec info(non_neg_integer, non_neg_integer, non_neg_integer, key :: info_type | [atom] | atom) ::
+          term
   def info(a, b, c, key), do: :recon.info(a, b, c, key)
 
   @doc """
@@ -167,7 +177,7 @@ defmodule Recon do
   """
   @spec info(pid_term) :: [{info_type, [{info_key, value :: term}]}, ...]
   def info(pid_term) do
-    ReconLib.term_to_pid(pid_term) |> :recon.info
+    ReconLib.term_to_pid(pid_term) |> :recon.info()
   end
 
   @doc """
@@ -238,9 +248,11 @@ defmodule Recon do
   differentiate them. This can take a heavy toll on memory when you
   have many dozens of thousands of processes.
   """
-  @spec proc_window(attribute_name :: atom,
-                    non_neg_integer,
-                    milliseconds :: pos_integer) :: [proc_attrs]
+  @spec proc_window(
+          attribute_name :: atom,
+          non_neg_integer,
+          milliseconds :: pos_integer
+        ) :: [proc_attrs]
   def proc_window(attr_name, num, time) do
     :recon.proc_window(attr_name, num, time)
   end
@@ -269,10 +281,11 @@ defmodule Recon do
   """
   @spec node_stats_print(repeat :: non_neg_integer, interval_ms) :: term
   def node_stats_print(n, interval) do
-    fold_fun = fn(x, _) ->
+    fold_fun = fn x, _ ->
       IO.inspect(x, pretty: true)
       :ok
     end
+
     node_stats(n, interval, fold_fun, :ok)
   end
 
@@ -294,8 +307,8 @@ defmodule Recon do
 
   A scheduler isn't busy when doing anything else.
   """
-  @spec scheduler_usage(interval_ms)
-           :: [{scheduler_id :: pos_integer, usage :: number()}]
+  @spec scheduler_usage(interval_ms) ::
+          [{scheduler_id :: pos_integer, usage :: number()}]
   def scheduler_usage(interval) when is_integer(interval) do
     :recon.scheduler_usage(interval)
   end
@@ -325,11 +338,13 @@ defmodule Recon do
   of garbage collector runs, words of memory that were garbage
   collected, and the global reductions count for the node.
   """
-  @spec node_stats(non_neg_integer,
-                   interval_ms,
-                   fold_fun :: ((stats, acc :: term) -> term),
-                   acc0 :: term)
-        :: (acc1 :: term)
+  @spec node_stats(
+          non_neg_integer,
+          interval_ms,
+          fold_fun :: (stats, acc :: term -> term),
+          acc0 :: term
+        ) ::
+          acc1 :: term
   def node_stats(n, interval, fold_fun, init) do
     :recon.node_stats(n, interval, fold_fun, init)
   end
@@ -383,32 +398,32 @@ defmodule Recon do
   Returns a list of all TCP ports (the data type) open on the node.
   """
   @spec tcp :: [port]
-  def tcp(), do: :recon.tcp
+  def tcp(), do: :recon.tcp()
 
   @doc """
   Returns a list of all UDP ports (the data type) open on the node.
   """
   @spec udp :: [port]
-  def udp(), do: :recon.udp
+  def udp(), do: :recon.udp()
 
   @doc """
   Returns a list of all SCTP ports (the data type) open on the node.
   """
   @spec sctp :: [port]
-  def sctp(), do: :recon.sctp
+  def sctp(), do: :recon.sctp()
 
   @doc """
   Returns a list of all file handles open on the node.
   """
   @spec files :: [port]
-  def files(), do: :recon.files
+  def files(), do: :recon.files()
 
   @doc """
   Shows a list of all different ports on the node with their
   respective types.
   """
   @spec port_types :: [{type :: charlist, count :: pos_integer}]
-  def port_types(), do: :recon.port_types
+  def port_types(), do: :recon.port_types()
 
   @doc """
   Fetches a given attribute from all inet ports (TCP, UDP, SCTP) and
@@ -464,10 +479,10 @@ defmodule Recon do
   The information-specific and the basic port info are sorted and
   categorized in broader categories (`port_info_type()`).
   """
-  @spec port_info(port_term)
-          :: [{port_info_type, [{port_info_key, term}]}, ...]
+  @spec port_info(port_term) ::
+          [{port_info_type, [{port_info_key, term}]}, ...]
   def port_info(port_term) do
-    ReconLib.term_to_port(port_term) |> :recon.port_info
+    ReconLib.term_to_port(port_term) |> :recon.port_info()
   end
 
   @doc """
@@ -483,13 +498,14 @@ defmodule Recon do
   accepted by `:erlang.port_info/2` are accepted, and lists of them
   too.
   """
-  @spec port_info(port_term, port_info_type)
-         :: {port_info_type, [{port_info_key, term}]}
+  @spec port_info(port_term, port_info_type) ::
+          {port_info_type, [{port_info_key, term}]}
   @spec port_info(port_term, [atom]) :: [{atom, term}]
   @spec port_info(port_term, atom) :: {atom, term}
   def port_info(port_term, type_or_keys) when is_binary(port_term) do
     to_char_list(port_term) |> :recon.port_info(type_or_keys)
   end
+
   def port_info(port_term, type_or_keys) do
     :recon.port_info(port_term, type_or_keys)
   end
@@ -533,5 +549,4 @@ defmodule Recon do
   """
   @spec named_rpc(nodes, (() -> term), timeout_ms) :: rpc_result
   def named_rpc(nodes, fun, timeout), do: :recon.named_rpc(nodes, fun, timeout)
-
 end
