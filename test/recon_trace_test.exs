@@ -52,7 +52,7 @@ defmodule ReconTraceTest do
 
   @spec make_shellfun(binary) :: (([term]) -> term)
   defp make_shellfun(fun_str) do
-     to_char_list(fun_str) |> :elixir.eval([]) |> elem(0)
+     to_char_list(fun_str) |> Code.eval_string([]) |> elem(0)
   end
 
   # defp make_shellfun_erl(erl_fun_str) do

@@ -88,7 +88,7 @@ defmodule Recon do
 
   @type inet_attrs :: {port, attr :: term, [{atom, term}]}
 
-  @type pid_term :: pid | atom | char_list()
+  @type pid_term :: pid | atom | charlist
                     | {:global, term} | {:via, module, term}
                     | {non_neg_integer, non_neg_integer, non_neg_integer}
 
@@ -111,7 +111,7 @@ defmodule Recon do
   @type time_ms :: pos_integer
   @type timeout_ms :: non_neg_integer | :infinity
 
-  @type port_term :: port | char_list | atom | pos_integer
+  @type port_term :: port | charlist | atom | pos_integer
 
   @type port_info_type :: :meta | :signals | :io | :memory_used | :specific
 
@@ -407,7 +407,7 @@ defmodule Recon do
   Shows a list of all different ports on the node with their
   respective types.
   """
-  @spec port_types :: [{type :: char_list, count :: pos_integer}]
+  @spec port_types :: [{type :: charlist, count :: pos_integer}]
   def port_types(), do: :recon.port_types
 
   @doc """
