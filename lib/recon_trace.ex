@@ -168,30 +168,37 @@ defmodule ReconTrace do
   ### TYPES ###
   #############
 
-  @type matchspec    :: [{[term], [term], [term]}]
-  @type shellfun     :: ((term) -> term)
-  @type formatterfun :: ((tuple) -> iodata)
-  @type millisecs    :: non_neg_integer
-  @type pidspec      :: :all | :existing | :new | Recon.pid_term
-  @type max_traces   :: non_neg_integer
-  @type max_rate     :: {max_traces, millisecs}
+  @type matchspec :: [{[term], [term], [term]}]
+  @type shellfun :: (term -> term)
+  @type formatterfun :: (tuple -> iodata)
+  @type millisecs :: non_neg_integer
+  @type pidspec :: :all | :existing | :new | Recon.pid_term()
+  @type max_traces :: non_neg_integer
+  @type max_rate :: {max_traces, millisecs}
 
-                     # trace options
-  @type options      :: [{:pid, pidspec | [pidspec, ...]}      # default: all
-                         | {:timestamp, :formatter | :trace}   # default: formatter
-                         | {:args, :args | :arity}             # default: args
-                         | {:io_server, pid}                   # default: group_leader()
-                         | {:formatter, formatterfun}          # default: internal formatter
-                     # match pattern options
-                         | {:scope, :global | :local}          # default: global
-                        ]
+  # trace options
+  # default: all
+  @type options :: [
+          {:pid, pidspec | [pidspec, ...]}
+          # default: formatter
+          | {:timestamp, :formatter | :trace}
+          # default: args
+          | {:args, :args | :arity}
+          # default: group_leader()
+          | {:io_server, pid}
+          # default: internal formatter
+          | {:formatter, formatterfun}
+          # match pattern options
+          # default: global
+          | {:scope, :global | :local}
+        ]
 
-  @type mod          :: :_ | module
-  @type f            :: :_ | atom
-  @type args         :: :_ | 0..255 | matchspec | shellfun
-  @type tspec        :: {mod, f, args}
-  @type max          :: max_traces | max_rate
-  @type num_matches  :: non_neg_integer
+  @type mod :: :_ | module
+  @type f :: :_ | atom
+  @type args :: :_ | 0..255 | matchspec | shellfun
+  @type tspec :: {mod, f, args}
+  @type max :: max_traces | max_rate
+  @type num_matches :: non_neg_integer
 
   ##############
   ### Public ###
@@ -202,19 +209,20 @@ defmodule ReconTrace do
   """
   @spec clear() :: :ok
   def clear() do
-    :recon_trace.clear
+    :recon_trace.clear()
   end
 
   @doc """
   Equivalent to `calls/3`.
   """
   @spec calls(tspec | [tspec, ...], max) :: num_matches
-  def calls({_mod, _fun, _args}=tspec, max) do
-    :recon_trace.calls(to_erl_tspec(tspec), max, [formatter: &format/1])
+  def calls({_mod, _fun, _args} = tspec, max) do
+    :recon_trace.calls(to_erl_tspec(tspec), max, formatter: &format/1)
   end
+
   def calls(tspecs, max) when is_list(tspecs) do
-    Enum.map(tspecs, &to_erl_tspec/1) |>
-      :recon_trace.calls(max, [formatter: &format/1])
+    Enum.map(tspecs, &to_erl_tspec/1)
+    |> :recon_trace.calls(max, formatter: &format/1)
   end
 
   @doc """
@@ -308,12 +316,13 @@ defmodule ReconTrace do
   precautions taken by this library.
   """
   @spec calls(tspec | [tspec, ...], max, options) :: num_matches
-  def calls({_mod, _fun, _args}=tspec, max, opts) do
+  def calls({_mod, _fun, _args} = tspec, max, opts) do
     :recon_trace.calls(to_erl_tspec(tspec), max, add_formatter(opts))
   end
+
   def calls(tspecs, max, opts) when is_list(tspecs) do
-    Enum.map(tspecs, &to_erl_tspec/1) |>
-      :recon_trace.calls(max, add_formatter(opts))
+    Enum.map(tspecs, &to_erl_tspec/1)
+    |> :recon_trace.calls(max, add_formatter(opts))
   end
 
   @doc """
@@ -324,7 +333,8 @@ defmodule ReconTrace do
   def to_erl_tspec({mod, fun, shellfun}) when is_function(shellfun) do
     {mod, fun, fun_to_match_spec(shellfun)}
   end
-  def to_erl_tspec({_mod, _fun, _arity_or_matchspec}=tspec) do
+
+  def to_erl_tspec({_mod, _fun, _arity_or_matchspec} = tspec) do
     tspec
   end
 
@@ -349,93 +359,117 @@ defmodule ReconTrace do
     case :proplists.get_value(:formatter, opts) do
       func when is_function(func, 1) ->
         opts
+
       _ ->
         [{:formatter, &format/1} | opts]
     end
   end
 
   defp format_body(:receive, [msg]) do
-    "< #{inspect msg, pretty: true}"
+    "< #{inspect(msg, pretty: true)}"
   end
+
   defp format_body(:send, [msg, to]) do
-    " > #{inspect to, pretty: true}: #{inspect msg, pretty: true}"
+    " > #{inspect(to, pretty: true)}: #{inspect(msg, pretty: true)}"
   end
+
   defp format_body(:send_to_non_existing_process, [msg, to]) do
-    " > (non_existent) #{inspect to, pretty: true}: #{inspect msg, pretty: true}"
+    " > (non_existent) #{inspect(to, pretty: true)}: #{inspect(msg, pretty: true)}"
   end
+
   defp format_body(:call, [{m, f, args}]) do
-    "#{format_module m}.#{f}#{format_args args}"
+    "#{format_module(m)}.#{f}#{format_args(args)}"
   end
+
   defp format_body(:return_to, [{m, f, arity}]) do
-    "#{format_module m}.#{f}/#{arity}"
+    "#{format_module(m)}.#{f}/#{arity}"
   end
+
   defp format_body(:return_from, [{m, f, arity}, return]) do
-    "#{format_module m}.#{f}/#{arity} --> #{inspect return, pretty: true}"
+    "#{format_module(m)}.#{f}/#{arity} --> #{inspect(return, pretty: true)}"
   end
+
   defp format_body(:exception_from, [{m, f, arity}, {class, val}]) do
-    "#{format_module m}.#{f}/#{arity} #{class} #{inspect val, pretty: true}"
+    "#{format_module(m)}.#{f}/#{arity} #{class} #{inspect(val, pretty: true)}"
   end
+
   defp format_body(:spawn, [spawned, {m, f, args}]) do
-    "spawned #{inspect spawned, pretty: true} as #{format_module m}.#{f}#{format_args args}"
+    "spawned #{inspect(spawned, pretty: true)} as #{format_module(m)}.#{f}#{format_args(args)}"
   end
+
   defp format_body(:exit, [reason]) do
-    "EXIT #{inspect reason, pretty: true}"
+    "EXIT #{inspect(reason, pretty: true)}"
   end
+
   defp format_body(:link, [linked]) do
-    "link(#{inspect linked, pretty: true})"
+    "link(#{inspect(linked, pretty: true)})"
   end
+
   defp format_body(:unlink, [linked]) do
-    "unlink(#{inspect linked, pretty: true})"
+    "unlink(#{inspect(linked, pretty: true)})"
   end
+
   defp format_body(:getting_linked, [linker]) do
-    "getting linked by #{inspect linker, pretty: true}"
+    "getting linked by #{inspect(linker, pretty: true)}"
   end
+
   defp format_body(:getting_unlinked, [unlinker]) do
-    "getting unlinked by #{inspect unlinker, pretty: true}"
+    "getting unlinked by #{inspect(unlinker, pretty: true)}"
   end
+
   defp format_body(:register, [name]) do
-    "registered as #{inspect name, pretty: true}"
+    "registered as #{inspect(name, pretty: true)}"
   end
+
   defp format_body(:unregister, [name]) do
-    "no longer registered as #{inspect name, pretty: true}"
+    "no longer registered as #{inspect(name, pretty: true)}"
   end
+
   defp format_body(:in, [{m, f, arity}]) do
-    "scheduled in for #{format_module m}.#{f}/#{arity}"
+    "scheduled in for #{format_module(m)}.#{f}/#{arity}"
   end
+
   defp format_body(:in, [0]) do
     "scheduled in"
   end
+
   defp format_body(:out, [{m, f, arity}]) do
-    "scheduled out from #{format_module m}.#{f}/#{arity}"
+    "scheduled out from #{format_module(m)}.#{f}/#{arity}"
   end
+
   defp format_body(:out, [0]) do
     "scheduled out"
   end
+
   defp format_body(:gc_start, [info]) do
-    "gc beginning -- heap #{calc_total_heap_size info} bytes"
+    "gc beginning -- heap #{calc_total_heap_size(info)} bytes"
   end
+
   defp format_body(:gc_end, [info]) do
-    "gc finished -- heap #{calc_total_heap_size info} bytes"
+    "gc finished -- heap #{calc_total_heap_size(info)} bytes"
   end
+
   defp format_body(type, trace_info) do
-    "unknown trace type #{inspect type, pretty: true} -- #{inspect trace_info, pretty: true}"
+    "unknown trace type #{inspect(type, pretty: true)} -- #{inspect(trace_info, pretty: true)}"
   end
 
   defp extract_info(trace_msg) do
     case :erlang.tuple_to_list(trace_msg) do
       [:trace_ts, pid, type | info] ->
         {trace_info, [timestamp]} = :lists.split(:erlang.length(info) - 1, info)
-        {type, pid, to_hms(timestamp), trace_info};
+        {type, pid, to_hms(timestamp), trace_info}
+
       [:trace, pid, type | trace_info] ->
         {type, pid, to_hms(:os.timestamp()), trace_info}
     end
   end
 
-  defp to_hms({_, _, micro}=stamp) do
+  defp to_hms({_, _, micro} = stamp) do
     {_, {h, m, secs}} = :calendar.now_to_local_time(stamp)
-    seconds = rem(secs, 60) + (micro / 1_000_000)
+    seconds = rem(secs, 60) + micro / 1_000_000
     {h, m, seconds}
   end
+
   defp to_hms(_) do
     {0, 0, 0}
   end
@@ -444,9 +478,10 @@ defmodule ReconTrace do
     to_string(module_atom) |> format_module1
   end
 
-  defp format_module1(<<"Elixir.", module_str :: binary>>) do
+  defp format_module1(<<"Elixir.", module_str::binary>>) do
     module_str
   end
+
   defp format_module1(module_str) do
     ":" <> module_str
   end
@@ -454,8 +489,9 @@ defmodule ReconTrace do
   defp format_args(arity) when is_integer(arity) do
     "/#{arity}"
   end
+
   defp format_args(args) when is_list(args) do
-    arg_str = Enum.map(args, &(inspect &1, pretty: true)) |> Enum.join(", ")
+    arg_str = Enum.map(args, &inspect(&1, pretty: true)) |> Enum.join(", ")
     "(" <> arg_str <> ")"
   end
 
@@ -467,17 +503,19 @@ defmodule ReconTrace do
     case :erl_eval.fun_data(shell_fun) do
       {:fun_data, import_list, clauses} ->
         case :ms_transform.transform_from_shell(:dbg, clauses, import_list) do
-          {:error, [{_, [{_, _, code} | _]} |_], _} ->
-            IO.puts "Error: #{:ms_transform.format_error(code)}"
+          {:error, [{_, [{_, _, code} | _]} | _], _} ->
+            IO.puts("Error: #{:ms_transform.format_error(code)}")
             {:error, :transform_error}
+
           [{args, gurds, [:return]}] ->
             [{args, gurds, [{:return_trace}]}]
+
           match_spec ->
             match_spec
         end
+
       false ->
         exit(:shell_funs_only)
     end
   end
-
 end

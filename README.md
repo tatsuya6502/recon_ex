@@ -33,7 +33,7 @@ not want bleeding edge and development content for this library.
 Versions supported:
 
 - Elixir 1.1 or newer
-- Recon 2.3.0 or newer
+- Recon 2.5.0 or newer
 
 
 ## Try Them Out
