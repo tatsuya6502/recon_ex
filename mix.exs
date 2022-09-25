@@ -7,7 +7,7 @@ defmodule ReconEx.Mixfile do
     [
       app: :recon_ex,
       version: @version,
-      elixir: "~> 1.1",
+      elixir: "~> 1.3",
       description: "Elixir wrapper for Recon, diagnostic tools for production use",
       package: [
         maintainers: ["Tatsuya Kawano"],

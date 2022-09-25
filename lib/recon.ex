@@ -503,7 +503,7 @@ defmodule Recon do
   @spec port_info(port_term, [atom]) :: [{atom, term}]
   @spec port_info(port_term, atom) :: {atom, term}
   def port_info(port_term, type_or_keys) when is_binary(port_term) do
-    to_char_list(port_term) |> :recon.port_info(type_or_keys)
+    to_charlist(port_term) |> :recon.port_info(type_or_keys)
   end
 
   def port_info(port_term, type_or_keys) do
