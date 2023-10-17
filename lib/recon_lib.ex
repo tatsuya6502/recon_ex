@@ -30,7 +30,7 @@ defmodule ReconLib do
   Runs a fun once, waits `ms`, runs the fun again, and returns both
   results.
   """
-  @spec sample(milliseconds, (() -> term)) ::
+  @spec sample(milliseconds, (-> term)) ::
           {first :: term, second :: term}
   def sample(delay, fun), do: :recon_lib.sample(delay, fun)
 
@@ -113,11 +113,11 @@ defmodule ReconLib do
   end
 
   defp pre_process_pid_term(<<"#PID", pid_term::binary>>) do
-    to_char_list(pid_term)
+    to_charlist(pid_term)
   end
 
   defp pre_process_pid_term(pid_term) when is_binary(pid_term) do
-    to_char_list(pid_term)
+    to_charlist(pid_term)
   end
 
   defp pre_process_pid_term(pid_term) do
@@ -129,7 +129,7 @@ defmodule ReconLib do
   """
   @spec term_to_port(Recon.port_term()) :: port
   def term_to_port(term) when is_binary(term) do
-    to_char_list(term) |> :recon_lib.term_to_port()
+    to_charlist(term) |> :recon_lib.term_to_port()
   end
 
   def term_to_port(term) do

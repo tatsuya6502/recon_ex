@@ -503,7 +503,7 @@ defmodule Recon do
   @spec port_info(port_term, [atom]) :: [{atom, term}]
   @spec port_info(port_term, atom) :: {atom, term}
   def port_info(port_term, type_or_keys) when is_binary(port_term) do
-    to_char_list(port_term) |> :recon.port_info(type_or_keys)
+    to_charlist(port_term) |> :recon.port_info(type_or_keys)
   end
 
   def port_info(port_term, type_or_keys) do
@@ -515,31 +515,31 @@ defmodule Recon do
   @doc """
   Shorthand for `rpc([node()|nodes()], fun)`
   """
-  @spec rpc((() -> term)) :: rpc_result
+  @spec rpc((-> term)) :: rpc_result
   def rpc(fun), do: :recon.rpc(fun)
 
   @doc """
   Shorthand for `rpc(nodes, fun, :infinity)`
   """
-  @spec rpc(nodes, (() -> term)) :: rpc_result
+  @spec rpc(nodes, (-> term)) :: rpc_result
   def rpc(nodes, fun), do: :recon.rpc(nodes, fun)
 
   @doc """
   Runs an arbitrary fn (of arity 0) over one or more nodes.
   """
-  @spec rpc(nodes, (() -> term), timeout_ms) :: rpc_result
+  @spec rpc(nodes, (-> term), timeout_ms) :: rpc_result
   def rpc(nodes, fun, timeout), do: :recon.rpc(nodes, fun, timeout)
 
   @doc """
   Shorthand for `named_rpc([node()|nodes()], fun)`
   """
-  @spec named_rpc((() -> term)) :: rpc_result
+  @spec named_rpc((-> term)) :: rpc_result
   def named_rpc(fun), do: :recon.named_rpc(fun)
 
   @doc """
   Shorthand for `named_rpc(nodes, fun, :infinity)`
   """
-  @spec named_rpc(nodes, (() -> term)) :: rpc_result
+  @spec named_rpc(nodes, (-> term)) :: rpc_result
   def named_rpc(nodes, fun), do: :recon.named_rpc(nodes, fun)
 
   @doc """
@@ -547,6 +547,6 @@ defmodule Recon do
   returns the name of the node that computed a given result along with
   it, in a tuple.
   """
-  @spec named_rpc(nodes, (() -> term), timeout_ms) :: rpc_result
+  @spec named_rpc(nodes, (-> term), timeout_ms) :: rpc_result
   def named_rpc(nodes, fun, timeout), do: :recon.named_rpc(nodes, fun, timeout)
 end

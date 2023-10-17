@@ -25,18 +25,18 @@ defmodule ReconTraceTest do
     assert format(
              {:trace_ts, pid(0, 1, 2), :call, {Emum, :each, [[:hello, "world"], &IO.puts/1]}, ts}
            ) ==
-             '\n#{format_timestamp(ts)} <0.1.2> Emum.each([:hello, "world"], &IO.puts/1)\n'
+             ~c"\n#{format_timestamp(ts)} <0.1.2> Emum.each([:hello, \"world\"], &IO.puts/1)\n"
 
     # Format an Erlang module call
     assert format({:trace_ts, pid(0, 1, 2), :call, {:lists, :seq, [1, 10]}, ts}) ==
-             '\n#{format_timestamp(ts)} <0.1.2> :lists.seq(1, 10)\n'
+             ~c"\n#{format_timestamp(ts)} <0.1.2> :lists.seq(1, 10)\n"
   end
 
   test "format/1 for :return_to" do
     ts = :os.timestamp()
 
     assert format({:trace_ts, pid(0, 1, 2), :return_from, {Emum, :each, 2}, :ok, ts}) ==
-             '\n#{format_timestamp(ts)} <0.1.2> Emum.each/2 --> :ok\n'
+             ~c"\n#{format_timestamp(ts)} <0.1.2> Emum.each/2 --> :ok\n"
   end
 
   #################
@@ -45,7 +45,7 @@ defmodule ReconTraceTest do
 
   @spec make_shellfun(binary) :: ([term] -> term)
   defp make_shellfun(fun_str) do
-    to_char_list(fun_str) |> Code.eval_string([]) |> elem(0)
+    to_charlist(fun_str) |> Code.eval_string([]) |> elem(0)
   end
 
   # defp make_shellfun_erl(erl_fun_str) do
@@ -56,7 +56,7 @@ defmodule ReconTraceTest do
   # end
 
   defp pid(a, b, c) do
-    :erlang.list_to_pid('<#{a}.#{b}.#{c}>')
+    :erlang.list_to_pid(~c"<#{a}.#{b}.#{c}>")
   end
 
   defp to_hms({_, _, micro} = ts) do
@@ -66,7 +66,7 @@ defmodule ReconTraceTest do
   end
 
   defp format_hms({h, m, s}) do
-    :io_lib.format('~2.2.0w:~2.2.0w:~9.6.0f', [h, m, s])
+    :io_lib.format(~c"~2.2.0w:~2.2.0w:~9.6.0f", [h, m, s])
   end
 
   defp format_timestamp(ts) do
