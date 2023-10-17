@@ -346,9 +346,9 @@ defmodule ReconTrace do
   @spec format(trace_msg :: tuple) :: iodata
   def format(trace_msg) do
     {type, pid, {hour, min, sec}, trace_info} = extract_info(trace_msg)
-    header = :io_lib.format('~n~2.2.0w:~2.2.0w:~9.6.0f ~p', [hour, min, sec, pid])
+    header = :io_lib.format(~c"~n~2.2.0w:~2.2.0w:~9.6.0f ~p", [hour, min, sec, pid])
     body = format_body(type, trace_info) |> String.replace("~", "~~")
-    '#{header} #{body}\n'
+    ~c"#{header} #{body}\n"
   end
 
   ###############

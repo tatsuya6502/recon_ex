@@ -26,10 +26,9 @@ defmodule ReconEx.Mixfile do
 
   defp deps do
     [
-      {:recon, "~> 2.5", manager: :rebar},
-      {:ex_doc, "~> 0.10.0", only: :dev},
-      {:earmark, "~> 0.1", only: :dev}
-      # {:markdown, github: "devinus/markdown", only: :test}
+      {:recon, "~> 2.5"},
+      {:ex_doc, "~> 0.30", only: :dev},
+      {:earmark, "~> 1.4", only: :dev}
     ]
   end
 end
